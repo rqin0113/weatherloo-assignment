@@ -39,6 +39,14 @@ If pip-installing `cartopy` fails on macOS, install via conda:
 conda install -c conda-forge cartopy
 ```
 
+If you see an SSL certificate verification failure while opening the ERA5 Zarr dataset, install `certifi` and make sure Python uses its certificate bundle:
+
+```bash
+pip install certifi
+export SSL_CERT_FILE=$(python -m certifi)
+python visualize_wind.py
+```
+
 2. Run the visualization script:
 
 ```bash

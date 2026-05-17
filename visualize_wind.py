@@ -1,3 +1,4 @@
+import os
 import numpy as np
 import xarray as xr
 import matplotlib.pyplot as plt
@@ -11,6 +12,20 @@ except ImportError as exc:
         "or `conda install -c conda-forge cartopy` and then rerun the script."
     ) from exc
 
+
+def configure_ssl_certificates() -> None:
+    """Configure the SSL certificate bundle for HTTPS requests when needed."""
+    if os.environ.get("SSL_CERT_FILE"):
+        return
+
+    try:
+        import certifi
+    except ImportError:
+        return
+
+    os.environ["SSL_CERT_FILE"] = certifi.where()
+
+
 # Public ERA5 Zarr URL for 10-meter winds
 ZARR_URL = (
     "gcs://gcp-public-data-arco-era5/ar/1959-2022-6h-1440x721.zarr"
@@ -23,11 +38,21 @@ V10_VAR = "10m_v_component_of_wind"
 
 def load_era5_wind(zarr_url: str) -> xr.Dataset:
     """Load the ERA5 Zarr dataset from Google Cloud Storage."""
-    ds = xr.open_zarr(
-        zarr_url,
-        consolidated=True,
-        storage_options={"token": "anon"},
-    )
+    configure_ssl_certificates()
+
+    try:
+        ds = xr.open_zarr(
+            zarr_url,
+            consolidated=True,
+            storage_options={"token": "anon"},
+        )
+    except Exception as exc:
+        raise RuntimeError(
+            "Unable to open the ERA5 Zarr dataset from Google Cloud Storage. "
+            "This often happens when the local Python environment cannot verify HTTPS certificates. "
+            "On macOS, install certifi (`pip install certifi`) or use a conda environment with a valid SSL trust chain. "
+            "If certifi is already installed, set `SSL_CERT_FILE=$(python -m certifi)` and rerun the script."
+        ) from exc
 
     # Debug: print the variables present in the dataset.
     print("Available variables:", list(ds.data_vars))
