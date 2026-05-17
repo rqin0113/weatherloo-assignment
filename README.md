@@ -12,6 +12,8 @@ This file answers the take-home questions from `README.md`, shows how to run the
 
 ## Task 2: Visualization approach
 
+![alt text](<Screenshot 2026-05-17 at 6.34.56 PM.png>)
+
 - I implemented a simple, clean global animation using `xarray` + `matplotlib` + `cartopy` in `visualize_wind.py`.
 - Design decisions:
   - Use the precomputed `10m_wind_speed` if available to avoid computing magnitude on the fly; fall back to components if needed.
